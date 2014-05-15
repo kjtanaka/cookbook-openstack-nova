@@ -3,7 +3,7 @@
 # Recipe:: default
 # Author:: Koji Tanaka (<kj.tanaka@gmail.com>)
 #
-# Copyright 2014, FutureGrid, Indiana Univercity
+# Copyright 2013-2014, FutureGrid, Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,3 +16,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+packages = %w[nova-api
+              nova-cert
+              nova-compute
+              nova-compute-kvm
+              nova-objectstore
+              nova-network
+              nova-scheduler
+              nova-conductor
+              nova-doc
+              nova-console
+              nova-consoleauth
+              nova-novncproxy
+              novnc
+              openstack-dashboard]
+
+packages.each do |pkg|
+	package pkg do
+	  action :install
+  end
+end
