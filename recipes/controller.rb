@@ -101,7 +101,7 @@ services = %w[nova-api nova-cert nova-compute nova-network nova-consoleauth nova
 
 services.each do |svc|
   service svc do
-    supports :restart => true
+    supports :restart => true, :start => true, :stop => true
     restart_command "restart #{svc}"
     start_command "start #{svc}"
     stop_command "stop #{svc}"
