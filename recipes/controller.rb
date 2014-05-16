@@ -103,6 +103,8 @@ services.each do |svc|
   service svc do
     supports :restart => true
     restart_command "restart #{svc}"
+    start_command "start #{svc}"
+    stop_command "stop #{svc}"
     action :nothing
   end
 end
