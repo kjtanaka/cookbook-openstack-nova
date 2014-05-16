@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: openstack-nova
-# Recipe:: controller
+# Recipe:: compute
 # Author:: Koji Tanaka (<kj.tanaka@gmail.com>)
 #
 # Copyright 2013-2014, FutureGrid, Indiana University
@@ -37,19 +37,9 @@ openstack_flat_interface = "eth0"
 openstack_fixed_range = "192.168.33.0/24"
 
 packages = %w[nova-api
-              nova-cert
               nova-compute
               nova-compute-kvm
-              nova-objectstore
-              nova-network
-              nova-scheduler
-              nova-conductor
-              nova-doc
-              nova-console
-              nova-consoleauth
-              nova-novncproxy
-              novnc
-              openstack-dashboard]
+              nova-network]
 
 packages.each do |pkg|
 	package pkg do
@@ -78,53 +68,23 @@ template "/etc/nova/nova.conf" do
     :rabbit_virtual_host => rabbit_virtual_host,
     :nova_db => nova_db
   )
-  notifies :run, "execute[nova_manage_db_sync]", :immediately
-  notifies :restart, "service[nova-api]", :immediately
-  notifies :restart, "service[nova-cert]", :immediately
-  notifies :restart, "service[nova-consoleauth]", :immediately
-  notifies :restart, "service[nova-scheduler]", :immediately
-  notifies :restart, "service[nova-conductor]", :immediately
-  notifies :restart, "service[nova-compute]", :immediately
-  notifies :restart, "service[nova-network]", :immediately
-  notifies :restart, "service[nova-novncproxy]", :immediately
-  notifies :run, "execute[nova_manage_network_create]", :immediately
+  notifies :stop, "service[nova-api]", :immediately
+  notifies :stop, "service[nova-compute]", :immediately
+  notifies :stop, "service[nova-network]", :immediately
+  notifies :start, "service[nova-api]", :immediately
+  notifies :start, "service[nova-compute]", :immediately
+  notifies :start, "service[nova-network]", :immediately
 end
 
-execute "nova_manage_db_sync" do
-  user "nova"
-  command "nova-manage db sync && touch /etc/nova/.db_synced_do_not_delete"
-  creates "/etc/nova/.db_synced_do_not_delete"
-  action :nothing
-end
-
-services = %w[nova-api nova-cert nova-compute nova-network nova-consoleauth nova-scheduler nova-conductor nova-novncproxy]
+services = %w[nova-api nova-compute nova-network]
 
 services.each do |svc|
   service svc do
     supports :restart => true
     restart_command "restart #{svc}"
+    start_command "start #{svc}"
+    stop_command "stop #{svc}"
     action :nothing
   end
 end
 
-execute "nova_manage_network_create" do
-  user "root"
-  command "nova-manage network create --label private --num_networks=1 --fixed_range_v4=#{openstack_fixed_range} --bridge_interface=#{openstack_flat_interface} --network_size=256 --multi_host=T && touch /etc/nova/.network_create_do_not_delete"
-  creates "/etc/nova/.network_create_do_not_delete"
-  action :nothing
-end
-
-script "generate keypair" do
-  interpreter "bash"
-  user "root"
-  cwd "/root"
-  code <<-EOH
-  test -d .ssh || mkdir .ssh && chmod 700 .ssh
-  source admin_credential
-  nova keypair-add key1 > .ssh/key1.pem
-  chmod 600 .ssh/key1.pem
-  echo StrictHostKeyChecking no >> .ssh/config
-  echo UserKnownHostsFile=/dev/null >> .ssh/config
-  EOH
-  creates "/root/.ssh/key1.pem"
-end
