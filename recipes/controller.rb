@@ -79,14 +79,14 @@ template "/etc/nova/nova.conf" do
     :nova_db => nova_db
   )
   notifies :run, "execute[nova_manage_db_sync]", :immediately
-  notifies [:stop, :start], "service[nova-api]", :immediately
-  notifies [:stop, :start], "service[nova-cert]", :immediately
-  notifies [:stop, :start], "service[nova-consoleauth]", :immediately
-  notifies [:stop, :start], "service[nova-scheduler]", :immediately
-  notifies [:stop, :start], "service[nova-conductor]", :immediately
-  notifies [:stop, :start], "service[nova-compute]", :immediately
-  notifies [:stop, :start], "service[nova-network]", :immediately
-  notifies [:stop, :start], "service[nova-novncproxy]", :immediately
+  notifies :restart, "service[nova-api]", :immediately
+  notifies :restart, "service[nova-cert]", :immediately
+  notifies :restart, "service[nova-consoleauth]", :immediately
+  notifies :restart, "service[nova-scheduler]", :immediately
+  notifies :restart, "service[nova-conductor]", :immediately
+  notifies :restart, "service[nova-compute]", :immediately
+  notifies :restart, "service[nova-network]", :immediately
+  notifies :restart, "service[nova-novncproxy]", :immediately
   notifies :run, "execute[nova_manage_network_create]", :immediately
 end
 
@@ -101,10 +101,8 @@ services = %w[nova-api nova-cert nova-compute nova-network nova-consoleauth nova
 
 services.each do |svc|
   service svc do
-    supports :restart => true, :start => true, :stop => true
-    restart_command "restart #{svc}"
-    start_command "start #{svc}"
-    stop_command "stop #{svc}"
+    supports :restart => true
+    restart_command "restart #{svc} || start #{svc}"
     action :nothing
   end
 end
