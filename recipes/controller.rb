@@ -88,6 +88,7 @@ template "/etc/nova/nova.conf" do
   notifies :restart, "service[nova-network]", :immediately
   notifies :restart, "service[nova-novncproxy]", :immediately
   notifies :run, "execute[nova_manage_network_create]", :immediately
+  notifies :run, "script[generate_keypair]", :immediately
 end
 
 execute "nova_manage_db_sync" do
@@ -114,7 +115,7 @@ execute "nova_manage_network_create" do
   action :nothing
 end
 
-script "generate keypair" do
+script "generate_keypair" do
   interpreter "bash"
   user "root"
   cwd "/root"
@@ -127,4 +128,5 @@ script "generate keypair" do
   echo UserKnownHostsFile=/dev/null >> .ssh/config
   EOH
   creates "/root/.ssh/key1.pem"
+  action :nothing
 end
