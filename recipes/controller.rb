@@ -59,7 +59,7 @@ end
 
 template "/etc/nova/nova.conf" do
   source "nova.conf.erb"
-  mode "0644"
+  mode "0640"
   owner "nova"
   group "nova"
   action :create

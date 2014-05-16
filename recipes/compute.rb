@@ -49,7 +49,7 @@ end
 
 template "/etc/nova/nova.conf" do
   source "nova.conf.erb"
-  mode "0644"
+  mode "0640"
   owner "nova"
   group "nova"
   action :create
@@ -68,12 +68,9 @@ template "/etc/nova/nova.conf" do
     :rabbit_virtual_host => rabbit_virtual_host,
     :nova_db => nova_db
   )
-  notifies :stop, "service[nova-api]", :immediately
-  notifies :stop, "service[nova-compute]", :immediately
-  notifies :stop, "service[nova-network]", :immediately
-  notifies :start, "service[nova-api]", :immediately
-  notifies :start, "service[nova-compute]", :immediately
-  notifies :start, "service[nova-network]", :immediately
+  notifies :restart, "service[nova-api]", :immediately
+  notifies :restart, "service[nova-compute]", :immediately
+  notifies :restart, "service[nova-network]", :immediately
 end
 
 services = %w[nova-api nova-compute nova-network]
@@ -81,9 +78,7 @@ services = %w[nova-api nova-compute nova-network]
 services.each do |svc|
   service svc do
     supports :restart => true
-    restart_command "restart #{svc}"
-    start_command "start #{svc}"
-    stop_command "stop #{svc}"
+    restart_command "restart #{svc} || start #{svc}"
     action :nothing
   end
 end
