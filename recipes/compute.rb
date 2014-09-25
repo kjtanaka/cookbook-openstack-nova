@@ -32,9 +32,9 @@ nova_db = node['openstack']['nova_db']
 rabbit_user = secrets['rabbit_user']
 rabbit_password = secrets['rabbit_password']
 rabbit_virtual_host = secrets['rabbit_virtual_host']
-openstack_public_interface = "eth1"
-openstack_flat_interface = "eth0"
-openstack_fixed_range = "192.168.33.0/24"
+openstack_public_interface = node['openstack']['public_interface']
+openstack_flat_interface = node['openstack']['flat_interface']
+openstack_fixed_range = node['openstack']['fixed_range']
 
 packages = %w[nova-api
               nova-compute
